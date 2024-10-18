@@ -45,10 +45,10 @@ const App = (): React.JSX.Element => {
     );
   };
 
-  const setWallpaper = () => {
+  const setWallpaper = (imgUri: string) => {
     ManageWallpaper.setWallpaper(
       {
-        uri: 'https://pixabay.com/get/ge23e31f9a70cf93a0770c58ec598fe8f044ebad5515b03da237537aaf13fa641e4a6a51b747111fba8d29ebf5bc36f2cf060b2350af9a4fb7271c3c4c0ed090f_1280.jpg',
+        uri: imgUri,
       },
       callback,
       TYPE.HOME,
@@ -85,7 +85,6 @@ const App = (): React.JSX.Element => {
     // save to list and display
 
     setimages(imgLs);
-    console.log(imgLs);
   };
 
   // image file list
@@ -95,6 +94,27 @@ const App = (): React.JSX.Element => {
   const renderItem = ({item, i}): ReactElement => {
     return (
       <View style={styles.imgWrapper}>
+        <TouchableOpacity style={styles.imgMenuBtn}>
+          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#fff'}}>
+            ...
+          </Text>
+        </TouchableOpacity>
+        <View style={styles.imgMenu}>
+          <TouchableOpacity
+            style={styles.BUTTON}
+            onPress={() => setWallpaper(item.source)}>
+            <Text style={styles.TEXT}>Home</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.BUTTON} onPress={setWallpaper}>
+            <Text style={styles.TEXT}>Lockscreen</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.BUTTON} onPress={setWallpaper}>
+            <Text style={styles.TEXT}>Both</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.BUTTON} onPress={() => pickImages()}>
+            <Text style={styles.TEXT}>Delete</Text>
+          </TouchableOpacity>
+        </View>
         <Image
           src={item.source}
           style={{
@@ -169,7 +189,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000000',
   },
   TEXT: {
     // fontSize: 20,
@@ -188,14 +207,35 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 
+  imgMenuBtn: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    backgroundColor: '#0008',
+    zIndex: 1,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+  },
+
+  imgMenu: {
+    position: 'absolute',
+    zIndex: 1,
+    bottom: 0,
+    backgroundColor: '#0008',
+    alignSelf: 'center',
+    borderRadius: 6,
+  },
+
   menuBtn: {
     position: 'absolute',
     width: 50,
     height: 50,
-    elevation: 3,
+    elevation: 5,
     borderRadius: 25,
     backgroundColor: '#fff',
-    top: 5,
+    bottom: 15,
     right: 5,
     zIndex: 1,
     alignItems: 'center',
