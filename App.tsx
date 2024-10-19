@@ -6,12 +6,13 @@
  * @format
  */
 
-import React, {ReactElement, useState} from 'react';
-import {View, TouchableOpacity, Text, StyleSheet, Image} from 'react-native';
-import ManageWallpaper, {TYPE} from 'react-native-manage-wallpaper';
+import React, {ReactElement, useState, useEffect} from 'react';
+import {View, TouchableOpacity, Text, StyleSheet} from 'react-native';
+import ManageWallpaper from 'react-native-manage-wallpaper';
 import * as ImagePicker from 'react-native-image-picker';
 import MasonryList from '@react-native-seoul/masonry-list';
 import {ImageLibraryOptions} from 'react-native-image-picker';
+import ImageCard from './components/ImageCard';
 
 // file system
 var RNFS = require('react-native-fs');
@@ -19,7 +20,28 @@ var RNFS = require('react-native-fs');
 const App = (): React.JSX.Element => {
   const callback = (res: any) => {
     // console.log('Response: ', res);
+    if (res.success) {
+      onWallpaperSet();
+    }
   };
+
+  // display already picked images
+  useEffect(() => {
+    RNFS.readDir(RNFS.DocumentDirectoryPath)
+      .then((result: any) => {
+        let imgs: {source: string}[] = [];
+        result?.map(img => {
+          imgs.push({
+            // source: RNFS.DocumentDirectoryPath + `/${img.fileName}`,
+            source: 'file://' + img.path,
+          });
+        });
+        setimages(imgs);
+      })
+      .catch((err: {message: any; code: any}) => {
+        console.log(err.message, err.code);
+      });
+  }, []);
 
   // create file
   const createFile = (fileName: any, image: any) => {
@@ -33,25 +55,25 @@ const App = (): React.JSX.Element => {
   };
 
   // delete file
-  const deleteFile = (fileName: string) => {
+  const deleteFile = (filePath: string) => {
     // create a path you want to delete
-    var path = RNFS.DocumentDirectoryPath + `/${fileName}`;
+    // var path = RNFS.DocumentDirectoryPath + `/${fileName}`;
 
     return (
-      RNFS.unlink(path)
+      RNFS.unlink(filePath)
         .then(() => {})
         // `unlink` will throw an error, if the item to unlink does not exist
         .catch((err: {message: any}) => {})
     );
   };
 
-  const setWallpaper = (imgUri: string) => {
+  const setWallpaper = (imgUri: string, type: any) => {
     ManageWallpaper.setWallpaper(
       {
         uri: imgUri,
       },
       callback,
-      TYPE.HOME,
+      type,
     );
   };
 
@@ -90,41 +112,22 @@ const App = (): React.JSX.Element => {
   // image file list
   const [images, setimages] = useState<imgInterface[]>([]);
   // const [imgPath, setImgPath] = useState();
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const onWallpaperSet = () => {
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 2000);
+  };
 
   const renderItem = ({item, i}): ReactElement => {
     return (
-      <View style={styles.imgWrapper}>
-        <TouchableOpacity style={styles.imgMenuBtn}>
-          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#fff'}}>
-            ...
-          </Text>
-        </TouchableOpacity>
-        <View style={styles.imgMenu}>
-          <TouchableOpacity
-            style={styles.BUTTON}
-            onPress={() => setWallpaper(item.source)}>
-            <Text style={styles.TEXT}>Home</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.BUTTON} onPress={setWallpaper}>
-            <Text style={styles.TEXT}>Lockscreen</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.BUTTON} onPress={setWallpaper}>
-            <Text style={styles.TEXT}>Both</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.BUTTON} onPress={() => pickImages()}>
-            <Text style={styles.TEXT}>Delete</Text>
-          </TouchableOpacity>
-        </View>
-        <Image
-          src={item.source}
-          style={{
-            // width: '100%',
-            height: Math.floor(Math.random() * (400 - 300)) + 300,
-            alignSelf: 'stretch',
-            // resizeMode: 'contain',
-          }}
-        />
-      </View>
+      <ImageCard
+        item={item}
+        setWallpaper={setWallpaper}
+        deleteFile={deleteFile}
+      />
     );
   };
 
@@ -171,6 +174,23 @@ const App = (): React.JSX.Element => {
           source={{uri: 'file://' + imgPath}}
         />
       )} */}
+      {showSuccess && (
+        <Text
+          style={{
+            ...styles.TEXT,
+            backgroundColor: '#fff',
+            position: 'absolute',
+            zIndex: 1,
+            bottom: 5,
+            fontSize: 16,
+            borderRadius: 20,
+            color: '#000',
+            paddingVertical: 5,
+            paddingHorizontal: 10,
+          }}>
+          Wallpaper Set!
+        </Text>
+      )}
     </View>
   );
 };
@@ -198,35 +218,6 @@ const styles = StyleSheet.create({
   },
 
   imgGrid: {},
-
-  imgWrapper: {
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    margin: 2,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-
-  imgMenuBtn: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    backgroundColor: '#0008',
-    zIndex: 1,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20,
-  },
-
-  imgMenu: {
-    position: 'absolute',
-    zIndex: 1,
-    bottom: 0,
-    backgroundColor: '#0008',
-    alignSelf: 'center',
-    borderRadius: 6,
-  },
 
   menuBtn: {
     position: 'absolute',
