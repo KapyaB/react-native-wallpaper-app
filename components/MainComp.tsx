@@ -9,12 +9,13 @@ import ManageWallpaper from 'react-native-manage-wallpaper';
 import * as ImagePicker from 'react-native-image-picker';
 import MasonryList from '@react-native-seoul/masonry-list';
 import StatusMsg from './reusable/StatusMsg';
+import FullScreen from './reusable/FullScreen';
 
 // file system
 var RNFS = require('react-native-fs');
 
 const MainComp = (props: any) => {
-  const {images, setImages, displayStatusMsg, showStatus} =
+  const {images, setImages, displayStatusMsg, showStatus, showFullscreenImg} =
     useContext(AppContext);
 
   const callback = (res: any) => {
@@ -123,7 +124,7 @@ const MainComp = (props: any) => {
       <View>
         <Text>Header</Text>
       </View>
-
+      {showFullscreenImg && <FullScreen />}
       {images && (
         <MasonryList
           keyExtractor={item => item.id}

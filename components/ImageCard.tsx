@@ -1,14 +1,23 @@
 /* eslint-disable react-native/no-inline-styles */
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 
 import {TYPE} from 'react-native-manage-wallpaper';
+import {AppContext} from '../globalState/AppContext';
 
 const ImageCard = ({item, setWallpaper, deleteFile}): React.JSX.Element => {
   const [showMenu, setShowMenu] = useState(false);
 
+  const {setFullscreenImgSrc, setShowFullscreenImg} = useContext(AppContext);
+
   return (
-    <View style={styles.container}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={() => {
+        setShowMenu(false);
+        setFullscreenImgSrc(item.source);
+        setShowFullscreenImg(true);
+      }}>
       <TouchableOpacity
         style={styles.imgMenuBtn}
         onPress={() => setShowMenu(!showMenu)}>
@@ -61,7 +70,7 @@ const ImageCard = ({item, setWallpaper, deleteFile}): React.JSX.Element => {
           // resizeMode: 'contain',
         }}
       />
-    </View>
+    </TouchableOpacity>
   );
 };
 

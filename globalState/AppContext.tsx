@@ -11,6 +11,10 @@ const AppProvider = ({children}) => {
   const [images, setImages] = useState<imgInterface[]>();
   const [showStatus, setShowStatus] = useState<Boolean>(false);
   const [statusMsg, setStatusMsg] = useState<String | undefined>();
+  const [fullscreenImgSrc, setFullscreenImgSrc] = useState<
+    String | undefined
+  >();
+  const [showFullscreenImg, setShowFullscreenImg] = useState<Boolean>(false);
 
   // status message
   const displayStatusMsg = (msg: String) => {
@@ -32,6 +36,10 @@ const AppProvider = ({children}) => {
         statusMsg,
         setStatusMsg,
         displayStatusMsg,
+        fullscreenImgSrc,
+        setFullscreenImgSrc,
+        showFullscreenImg,
+        setShowFullscreenImg,
       }}>
       {children}
     </AppContext.Provider>
