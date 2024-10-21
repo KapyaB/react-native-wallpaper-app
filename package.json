@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@react-native-seoul/masonry-list": "^1.4.2",
+    "@react-native-vector-icons/ant-design": "^4.4.2-alpha.32",
+    "@react-native-vector-icons/common": "^11.0.0-alpha.2",
+    "@react-native-vector-icons/entypo": "^1.0.1-alpha.32",
+    "@react-native-vector-icons/ionicons": "^7.4.0-alpha.34",
     "prop-types": "^15.8.1",
     "react": "18.3.1",
     "react-native": "0.75.4",

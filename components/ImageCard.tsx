@@ -5,6 +5,9 @@ import React, {useContext, useState} from 'react';
 import {TYPE} from 'react-native-manage-wallpaper';
 import {AppContext} from '../globalState/AppContext';
 
+import EntypoIcon from '@react-native-vector-icons/entypo';
+import AntDesignIcon from '@react-native-vector-icons/ant-design';
+
 const ImageCard = ({item, setWallpaper, deleteFile}): React.JSX.Element => {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -22,7 +25,14 @@ const ImageCard = ({item, setWallpaper, deleteFile}): React.JSX.Element => {
         style={styles.imgMenuBtn}
         onPress={() => setShowMenu(!showMenu)}>
         <Text style={{fontSize: 20, fontWeight: 'bold', color: '#fff'}}>
-          {showMenu ? 'X' : '...'}
+          {showMenu ? (
+            <AntDesignIcon name="close" style={{color: '#f00'}} />
+          ) : (
+            <EntypoIcon
+              name="dots-three-horizontal"
+              style={styles.menuBtnIcon}
+            />
+          )}
         </Text>
       </TouchableOpacity>
       {showMenu && (
@@ -33,7 +43,7 @@ const ImageCard = ({item, setWallpaper, deleteFile}): React.JSX.Element => {
               setWallpaper(item.source, TYPE.HOME);
               setShowMenu(!showMenu);
             }}>
-            <Text style={styles.text}>Home</Text>
+            <Text style={{...styles.text, color: '#333'}}>Home</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.btn}
@@ -41,7 +51,7 @@ const ImageCard = ({item, setWallpaper, deleteFile}): React.JSX.Element => {
               setWallpaper(item.source, TYPE.LOCK);
               setShowMenu(!showMenu);
             }}>
-            <Text style={styles.text}>Lockscreen</Text>
+            <Text style={{...styles.text, color: '#333'}}>Lockscreen</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.btn}
@@ -49,7 +59,7 @@ const ImageCard = ({item, setWallpaper, deleteFile}): React.JSX.Element => {
               setWallpaper(item.source, TYPE.BOTH);
               setShowMenu(!showMenu);
             }}>
-            <Text style={styles.text}>Both</Text>
+            <Text style={{...styles.text, color: '#333'}}>Both</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.btn}
@@ -57,7 +67,7 @@ const ImageCard = ({item, setWallpaper, deleteFile}): React.JSX.Element => {
               deleteFile(item.source);
               setShowMenu(!showMenu);
             }}>
-            <Text style={styles.text}>Delete</Text>
+            <Text style={{...styles.text, color: '#333'}}>Delete</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -107,12 +117,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 20,
   },
+  menuBtnIcon: {
+    color: '#fff',
+  },
 
   imgMenu: {
+    width: '50%',
     position: 'absolute',
     zIndex: 1,
-    bottom: 0,
-    backgroundColor: '#0008',
+    bottom: 5,
+    backgroundColor: '#fffe',
     alignSelf: 'center',
     borderRadius: 6,
   },
