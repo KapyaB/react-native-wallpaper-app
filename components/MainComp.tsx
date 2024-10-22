@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import {View, TouchableOpacity, Text, StyleSheet} from 'react-native';
-import React, {ReactElement, useEffect, useContext} from 'react';
+import React, {ReactElement, useEffect, useContext, useState} from 'react';
 
 import {ImageLibraryOptions} from 'react-native-image-picker';
 import ImageCard from './ImageCard';
@@ -12,6 +12,8 @@ import StatusMsg from './reusable/StatusMsg';
 import FullScreen from './reusable/FullScreen';
 import Header from './Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import uuid from 'react-native-uuid';
 
 // file system
 var RNFS = require('react-native-fs');
@@ -25,6 +27,9 @@ const MainComp = (): React.JSX.Element => {
     displayStatusMsg,
     showStatus,
     showFullscreenImg,
+    storeData,
+    setHomeWallpaper,
+    setLockWallpaper,
   } = useContext(AppContext);
 
   // async storage values
@@ -38,15 +43,20 @@ const MainComp = (): React.JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // retrieve saves wallpapers
+  useEffect(() => {
+    AsyncStorage.multiGet(['home_wallpaper', 'lock_wallpaper']).then(value => {
+      if (value === null) {
+      } else {
+        setHomeWallpaper(value[0][1]);
+        setLockWallpaper(value[1][1]);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // const theme = useTheme();
   const styles = stylesHandler(theme);
-
-  const callback = (res: any) => {
-    // console.log('Response: ', res);
-    if (res.status === 'success') {
-      displayStatusMsg('Wallpaper Set!');
-    }
-  };
 
   // display already picked images
   useEffect(() => {
@@ -110,11 +120,36 @@ const MainComp = (): React.JSX.Element => {
   };
 
   const setWallpaper = (imgUri: string, type: any) => {
+    // setWallpaperType(type);
     ManageWallpaper.setWallpaper(
       {
         uri: imgUri,
       },
-      callback,
+      (res: any) => {
+        if (res.status === 'success') {
+          displayStatusMsg('Wallpaper Set!');
+          const filePath: string = res.url;
+          // const pathLs: String[] = filePath.split('/');
+          // const name: String = pathLs[pathLs.length - 1];
+          // console.log(name);
+          if (type === 'both') {
+            try {
+              const pair1: [string, string] = ['home_wallpaper', filePath];
+              const pair2: [string, string] = ['lock_wallpaper', filePath];
+              AsyncStorage.multiSet([pair1, pair2]);
+              setHomeWallpaper(filePath);
+              setLockWallpaper(filePath);
+            } catch (e) {}
+          } else {
+            storeData(`${type}_wallpaper`, filePath);
+            if (type === 'home') {
+              setHomeWallpaper(filePath);
+            } else if (type === 'lock') {
+              setLockWallpaper(filePath);
+            }
+          }
+        }
+      },
       type,
     );
   };
@@ -133,8 +168,9 @@ const MainComp = (): React.JSX.Element => {
     result?.assets?.map(img => {
       // create uninque file name from base64 string- first 30 chars after 100th index minus (/)
       const fileExt = img?.fileName?.split('.').pop();
-      const newFileName =
-        img.base64?.replaceAll('/', '_').slice(100, 130) + `.${fileExt}`;
+      // const newFileName =
+      //   img.base64?.replaceAll('/', '_').slice(100, 130) + `.${fileExt}`;
+      const newFileName = uuid.v4().toString() + `.${fileExt}`;
       createFile(newFileName, img.base64);
     });
     // reload images from folder
@@ -159,6 +195,7 @@ const MainComp = (): React.JSX.Element => {
           style={{
             fontWeight: 'bold',
             fontSize: 30,
+            color: theme.txtColor,
           }}>
           +
         </Text>
@@ -217,7 +254,7 @@ const stylesHandler = (theme: any) =>
       height: 50,
       elevation: 5,
       borderRadius: 25,
-      backgroundColor: '#fff',
+      backgroundColor: theme.backgroundColor,
       bottom: 15,
       right: 5,
       zIndex: 1,

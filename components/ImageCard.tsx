@@ -6,7 +6,6 @@ import {TYPE} from 'react-native-manage-wallpaper';
 import {AppContext} from '../globalState/AppContext';
 
 import EntypoIcon from '@react-native-vector-icons/entypo';
-import AntDesignIcon from '@react-native-vector-icons/ant-design';
 
 const ImageCard = ({
   item,
@@ -19,30 +18,56 @@ const ImageCard = ({
 }): React.JSX.Element => {
   const [showMenu, setShowMenu] = useState(false);
 
-  const {setFullscreenImgSrc, setShowFullscreenImg} = useContext(AppContext);
+  const {
+    theme,
+    setFullscreenImgSrc,
+    setShowFullscreenImg,
+    homeWallpaper,
+    lockWallpaper,
+  } = useContext(AppContext);
+
+  // console.log(homeWallpaper, lockWallpaper);
+
+  const styles = stylesHandler(theme);
 
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={() => {
+        if (!showMenu) {
+          // if menu is showing just hide, else go fullscreen
+          setFullscreenImgSrc(item.source);
+          setShowFullscreenImg(true);
+        }
         setShowMenu(false);
-        setFullscreenImgSrc(item.source);
-        setShowFullscreenImg(true);
       }}>
-      <TouchableOpacity
-        style={styles.imgMenuBtn}
-        onPress={() => setShowMenu(!showMenu)}>
-        <Text style={{fontSize: 20, fontWeight: 'bold', color: '#fff'}}>
-          {showMenu ? (
-            <AntDesignIcon name="close" style={{color: '#f00'}} />
-          ) : (
+      {!showMenu && (
+        <TouchableOpacity
+          style={styles.imgMenuBtn}
+          onPress={() => setShowMenu(!showMenu)}>
+          <EntypoIcon name="dots-three-horizontal" style={styles.menuBtnIcon} />
+        </TouchableOpacity>
+      )}
+      {(homeWallpaper === item.source || lockWallpaper === item.source) && (
+        <View style={styles.wallpaperTypeWrapper}>
+          {homeWallpaper === item.source && (
             <EntypoIcon
-              name="dots-three-horizontal"
-              style={styles.menuBtnIcon}
+              name="home"
+              size={15}
+              color={'#0f0'}
+              style={{marginVertical: 3}}
             />
           )}
-        </Text>
-      </TouchableOpacity>
+          {lockWallpaper === item.source && (
+            <EntypoIcon
+              name="lock"
+              size={15}
+              color={'#0f0'}
+              style={{marginVertical: 3}}
+            />
+          )}
+        </View>
+      )}
       {showMenu && (
         <View style={styles.imgMenu}>
           <TouchableOpacity
@@ -51,7 +76,7 @@ const ImageCard = ({
               setWallpaper(item.source, TYPE.HOME);
               setShowMenu(!showMenu);
             }}>
-            <Text style={{...styles.text, color: '#333'}}>Home</Text>
+            <Text style={{...styles.text}}>Home</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.btn}
@@ -59,7 +84,7 @@ const ImageCard = ({
               setWallpaper(item.source, TYPE.LOCK);
               setShowMenu(!showMenu);
             }}>
-            <Text style={{...styles.text, color: '#333'}}>Lockscreen</Text>
+            <Text style={{...styles.text}}>Lockscreen</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.btn}
@@ -67,7 +92,7 @@ const ImageCard = ({
               setWallpaper(item.source, TYPE.BOTH);
               setShowMenu(!showMenu);
             }}>
-            <Text style={{...styles.text, color: '#333'}}>Both</Text>
+            <Text style={{...styles.text}}>Both</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.btn}
@@ -75,7 +100,7 @@ const ImageCard = ({
               deleteFile(item.source);
               setShowMenu(!showMenu);
             }}>
-            <Text style={{...styles.text, color: '#333'}}>Delete</Text>
+            <Text style={{...styles.text}}>Delete</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -94,48 +119,61 @@ const ImageCard = ({
 
 export default ImageCard;
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    margin: 2,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
+const stylesHandler = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      alignItems: 'center',
+      alignSelf: 'stretch',
+      margin: 2,
+      borderRadius: 20,
+      overflow: 'hidden',
+    },
 
-  text: {
-    // fontSize: 20,
-    margin: 5,
-    textAlign: 'center',
-    color: '#ffffff',
-  },
+    text: {
+      // fontSize: 20,
+      margin: 5,
+      textAlign: 'center',
+      color: theme.txtColor,
+    },
 
-  btn: {
-    alignItems: 'center',
-  },
+    btn: {
+      alignItems: 'center',
+    },
 
-  imgMenuBtn: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    backgroundColor: '#0008',
-    zIndex: 1,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20,
-  },
-  menuBtnIcon: {
-    color: '#fff',
-  },
+    imgMenuBtn: {
+      position: 'absolute',
+      width: 40,
+      height: 40,
+      backgroundColor: theme.backgroundColor,
+      zIndex: 1,
+      right: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 20,
+    },
+    menuBtnIcon: {
+      color: theme.txtColor,
+    },
 
-  imgMenu: {
-    width: '50%',
-    position: 'absolute',
-    zIndex: 1,
-    bottom: 5,
-    backgroundColor: '#fffe',
-    alignSelf: 'center',
-    borderRadius: 6,
-  },
-});
+    imgMenu: {
+      width: '50%',
+      position: 'absolute',
+      zIndex: 1,
+      bottom: 5,
+      backgroundColor: theme.backgroundColor,
+      alignSelf: 'center',
+      borderRadius: 6,
+    },
+
+    wallpaperTypeWrapper: {
+      backgroundColor: '#0008',
+      position: 'absolute',
+      zIndex: 1,
+      left: 5,
+      top: 5,
+      padding: 5,
+      width: 36,
+      alignItems: 'center',
+      borderRadius: 5,
+    },
+  });

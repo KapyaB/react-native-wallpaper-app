@@ -67,6 +67,10 @@ const AppProvider = ({children}: {children: any}) => {
     }, 2000);
   };
 
+  // current wallpapers
+  const [homeWallpaper, setHomeWallpaper] = useState<String>();
+  const [lockWallpaper, setLockWallpaper] = useState<String>();
+
   // async storage
   const storeData = async (key: string, value: any) => {
     try {
@@ -78,7 +82,7 @@ const AppProvider = ({children}: {children: any}) => {
 
   const readData = async (key: string) => {
     try {
-      const value: any | null = await AsyncStorage.getItem(key);
+      // const value: any | null = await AsyncStorage.getItem(key);
       const jsonValue = await AsyncStorage.getItem(key);
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (e) {
@@ -108,6 +112,11 @@ const AppProvider = ({children}: {children: any}) => {
         setFullscreenImgSrc,
         showFullscreenImg,
         setShowFullscreenImg,
+
+        homeWallpaper,
+        setHomeWallpaper,
+        lockWallpaper,
+        setLockWallpaper,
 
         mood,
         setMood,
