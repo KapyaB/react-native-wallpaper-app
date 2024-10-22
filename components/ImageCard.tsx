@@ -8,7 +8,15 @@ import {AppContext} from '../globalState/AppContext';
 import EntypoIcon from '@react-native-vector-icons/entypo';
 import AntDesignIcon from '@react-native-vector-icons/ant-design';
 
-const ImageCard = ({item, setWallpaper, deleteFile}): React.JSX.Element => {
+const ImageCard = ({
+  item,
+  setWallpaper,
+  deleteFile,
+}: {
+  item: any;
+  setWallpaper: Function;
+  deleteFile: Function;
+}): React.JSX.Element => {
   const [showMenu, setShowMenu] = useState(false);
 
   const {setFullscreenImgSrc, setShowFullscreenImg} = useContext(AppContext);

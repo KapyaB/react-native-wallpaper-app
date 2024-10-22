@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import {View, TouchableOpacity, Text, StyleSheet} from 'react-native';
-import React, {ReactElement, useEffect, useContext, FC} from 'react';
+import React, {ReactElement, useEffect, useContext} from 'react';
 
 import {ImageLibraryOptions} from 'react-native-image-picker';
 import ImageCard from './ImageCard';
@@ -11,6 +11,7 @@ import MasonryList from '@react-native-seoul/masonry-list';
 import StatusMsg from './reusable/StatusMsg';
 import FullScreen from './reusable/FullScreen';
 import Header from './Header';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // file system
 var RNFS = require('react-native-fs');
@@ -18,13 +19,24 @@ var RNFS = require('react-native-fs');
 const MainComp = (): React.JSX.Element => {
   const {
     theme,
-    mood,
+    handleThemeChange,
     images,
     setImages,
     displayStatusMsg,
     showStatus,
     showFullscreenImg,
   } = useContext(AppContext);
+
+  // async storage values
+  useEffect(() => {
+    AsyncStorage.getItem('theme').then(value => {
+      if (value === null) {
+      } else {
+        handleThemeChange(value);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // const theme = useTheme();
   const styles = stylesHandler(theme);
@@ -49,10 +61,14 @@ const MainComp = (): React.JSX.Element => {
         // sort results by mtime (date modified)
         result.sort((a: any, b: any) => b.mtime - a.mtime); // b-a - newest first
         result?.map((img: any) => {
-          imgs.push({
-            // source: RNFS.DocumentDirectoryPath + `/${img.fileName}`,
-            source: 'file://' + img.path,
-          });
+          const exts = ['jpg', 'jpeg', 'png', 'webp'];
+          const fileExt = img.name.split('.').pop();
+          if (exts.includes(fileExt)) {
+            imgs.push({
+              // source: RNFS.DocumentDirectoryPath + `/${img.fileName}`,
+              source: 'file://' + img.path,
+            });
+          }
         });
         setImages(imgs);
       })
@@ -115,7 +131,11 @@ const MainComp = (): React.JSX.Element => {
 
     // we are interested in the 'assets' list from the response
     result?.assets?.map(img => {
-      createFile(img.fileName, img.base64);
+      // create uninque file name from base64 string- first 30 chars after 100th index minus (/)
+      const fileExt = img?.fileName?.split('.').pop();
+      const newFileName =
+        img.base64?.replaceAll('/', '_').slice(100, 130) + `.${fileExt}`;
+      createFile(newFileName, img.base64);
     });
     // reload images from folder
     loadFiles();
@@ -170,7 +190,7 @@ const stylesHandler = (theme: any) =>
   StyleSheet.create({
     VIEW: {
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
       alignItems: 'center',
       backgroundColor: theme.backgroundColor,
     },

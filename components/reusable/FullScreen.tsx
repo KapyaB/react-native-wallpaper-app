@@ -1,11 +1,14 @@
 /* eslint-disable react-native/no-inline-styles */
-import {StyleSheet, Image, View, TouchableOpacity} from 'react-native';
+import {StyleSheet, Image, TouchableOpacity} from 'react-native';
 import React, {useContext} from 'react';
 import {AppContext} from '../../globalState/AppContext';
 
 const FullScreen = () => {
-  const {fullscreenImgSrc, setFullscreenImgSrc, setShowFullscreenImg} =
+  const {theme, fullscreenImgSrc, setFullscreenImgSrc, setShowFullscreenImg} =
     useContext(AppContext);
+
+  const styles = stylesHandler(theme);
+
   return (
     <TouchableOpacity
       style={styles.container}
@@ -28,15 +31,16 @@ const FullScreen = () => {
 
 export default FullScreen;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    position: 'absolute',
-    zIndex: 1,
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffffaa',
-  },
-});
+const stylesHandler = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      position: 'absolute',
+      zIndex: 1,
+      width: '100%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: `${theme.backgroundColor}aa`,
+    },
+  });

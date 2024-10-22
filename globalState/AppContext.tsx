@@ -1,16 +1,17 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useState} from 'react';
 import {useColorScheme} from 'react-native';
 
 const AppContext = React.createContext<any>({});
 
 const lightTheme = {
-  backgroundColor: '#fff',
-  txtColor: '#000',
+  backgroundColor: '#ffffff',
+  txtColor: '#000000',
 };
 
 const darkTheme = {
-  backgroundColor: '#000',
-  txtColor: '#fff',
+  backgroundColor: '#000000',
+  txtColor: '#ffffff',
 };
 
 const AppProvider = ({children}: {children: any}) => {
@@ -29,28 +30,30 @@ const AppProvider = ({children}: {children: any}) => {
   const [mood, setMood] = useState<String>('all');
 
   // color theme
-  const [colorTheme, setColorTheme] = useState<String>('sys'); // system, dark, light
+  const [colorTheme, setColorTheme] = useState<String>('system'); // system, dark, light
   const colorScheme = useColorScheme(); // user set to device system. light, dark, null
-  let theme = lightTheme;
+  const [theme, setTheme] = useState<any>(lightTheme);
 
-  const setTheme = () => {
-    switch (colorTheme) {
-      case 'sys':
-        theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const handleThemeChange = (color: string) => {
+    switch (color) {
+      case 'system':
+        setTheme(colorScheme === 'dark' ? darkTheme : lightTheme);
         break;
 
       case 'light':
-        theme = lightTheme;
+        setTheme(lightTheme);
         break;
 
       case 'dark':
-        theme = darkTheme;
+        setTheme(darkTheme);
         break;
 
       default:
-        theme = lightTheme;
+        setTheme(lightTheme);
         break;
     }
+    setColorTheme(color);
+    storeData('theme', color);
   };
 
   // status message
@@ -63,11 +66,35 @@ const AppProvider = ({children}: {children: any}) => {
       setStatusMsg(undefined);
     }, 2000);
   };
+
+  // async storage
+  const storeData = async (key: string, value: any) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      // saving error
+    }
+  };
+
+  const readData = async (key: string) => {
+    try {
+      const value: any | null = await AsyncStorage.getItem(key);
+      const jsonValue = await AsyncStorage.getItem(key);
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch (e) {
+      // error reading value
+      return null;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
+        storeData,
+        readData,
+
         theme,
-        setTheme,
+        handleThemeChange,
         colorTheme,
         setColorTheme,
         images,
@@ -92,4 +119,4 @@ const AppProvider = ({children}: {children: any}) => {
 
 export {AppContext, AppProvider};
 // color theme hook
-export const useTheme = () => React.useContext(AppContext);
+// export const useTheme = () => React.useContext(AppContext);
