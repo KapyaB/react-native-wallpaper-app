@@ -20,14 +20,13 @@ const AppProvider = ({children}: {children: any}) => {
     width: number | undefined;
     height: number | undefined;
   }
-  const [images, setImages] = useState<imgInterface[]>();
+  const [images, setImages] = useState<imgInterface[] | undefined>([]);
   const [showStatus, setShowStatus] = useState<Boolean>(false);
   const [statusMsg, setStatusMsg] = useState<String | undefined>();
   const [fullscreenImgSrc, setFullscreenImgSrc] = useState<
     String | undefined
   >();
   const [showFullscreenImg, setShowFullscreenImg] = useState<Boolean>(false);
-  const [mood, setMood] = useState<String>('all');
 
   // color theme
   const [colorTheme, setColorTheme] = useState<String>('system'); // system, dark, light
@@ -70,6 +69,16 @@ const AppProvider = ({children}: {children: any}) => {
   // current wallpapers
   const [homeWallpaper, setHomeWallpaper] = useState<String>();
   const [lockWallpaper, setLockWallpaper] = useState<String>();
+
+  // mood boards
+  interface Mood {
+    name: string;
+    images: imgInterface[] | undefined;
+  }
+  let defaultMood = {name: 'All', images: images};
+
+  const [moods, setMoods] = useState<Mood[]>([]);
+  const [currMood, setCurrMood] = useState<Mood>(defaultMood);
 
   // async storage
   const storeData = async (key: string, value: any) => {
@@ -118,8 +127,11 @@ const AppProvider = ({children}: {children: any}) => {
         lockWallpaper,
         setLockWallpaper,
 
-        mood,
-        setMood,
+        moods,
+        defaultMood,
+        setMoods,
+        currMood,
+        setCurrMood,
       }}>
       {children}
     </AppContext.Provider>

@@ -2,6 +2,7 @@
 import {
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   useColorScheme,
   View,
@@ -13,12 +14,69 @@ import EntypoIcon from '@react-native-vector-icons/entypo';
 import FAIcon from '@react-native-vector-icons/fontawesome';
 import IonIcon from '@react-native-vector-icons/ionicons';
 import AntDesignIcon from '@react-native-vector-icons/ant-design';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import MoodDeletePrompt from './reusable/MoodDeletePrompt';
 
 const Header = () => {
-  const {mood, theme, handleThemeChange, colorTheme} = useContext(AppContext);
+  const {
+    defaultMood,
+    currMood,
+    setCurrMood,
+    moods,
+    setMoods,
+    theme,
+    handleThemeChange,
+    colorTheme,
+    displayStatusMsg,
+  } = useContext(AppContext);
   const styles = stylesHandler(theme);
 
   const [showMenu, setShowMenu] = useState<Boolean>(false);
+  const [showMoods, setShowMoods] = useState<Boolean>(false);
+  const [moodText, onChangeMoodText] = useState<string>();
+  const [showDeletePrompt, setShowDeletePrompt] = useState<Boolean>(false);
+  const [moodToDel, setMoodToDel] = useState<string>();
+  const handleDeleteMood = (moodToDelete: string) => {
+    setMoodToDel(moodToDelete);
+    setShowDeletePrompt(true);
+  };
+  interface Mood {
+    name: string;
+    images: string[];
+  }
+  // create nre mood
+  const handleSubmitMood = () => {
+    const inputMood = moodText?.trim();
+    const existingMoods = moods?.map((m: Mood) => m.name);
+    // add to list
+    if (existingMoods?.includes(inputMood)) {
+      displayStatusMsg(`Mood Board "${inputMood}" Already Exists`);
+    } else {
+      const updatedMoods = [...moods, {name: inputMood, images: []}];
+      setMoods(updatedMoods);
+      // save moods to storage
+      try {
+        const jsonObj = JSON.stringify(updatedMoods);
+        AsyncStorage.setItem('moods', jsonObj);
+      } catch (error) {}
+    }
+    onChangeMoodText('');
+  };
+
+  const selectMood = (selectedMood: Mood) => {
+    setCurrMood(selectedMood);
+    try {
+      AsyncStorage.setItem('setMood', selectedMood.name);
+    } catch (error) {}
+
+    // const moodObj = moods.find((m: Mood) => m.name === selectedMood.name);
+    // setImages((l: string[]) =>
+    //   l.filter((item: string) => moodObj.images.includes(item)),
+    // );
+    // hide menus
+    setShowMoods(false);
+    setShowDeletePrompt(false);
+  };
 
   // theme switching function
   const switchTheme = () => {
@@ -52,7 +110,85 @@ const Header = () => {
   return (
     <View style={styles.container}>
       <Text style={{...styles.text, ...styles.logo}}>WallPP</Text>
-      <Text style={{...styles.text}}>mood: {mood}</Text>
+
+      <TouchableOpacity
+        style={styles.moodBtn}
+        onPress={() => {
+          setShowMoods(true);
+          setShowMenu(false);
+        }}>
+        <Text style={{...styles.text, marginHorizontal: 5, fontWeight: 'bold'}}>
+          {currMood.name}
+        </Text>
+        <IonIcon
+          name="swap-vertical"
+          size={18}
+          color={theme.txtColor}
+          style={{marginHorizontal: 5}}
+        />
+      </TouchableOpacity>
+
+      {showMoods && (
+        <View style={styles.moodWrapper}>
+          {showDeletePrompt && (
+            <MoodDeletePrompt
+              mood={moodToDel}
+              setShowDeletePrompt={setShowDeletePrompt}
+              setShowMoods={setShowMoods}
+            />
+          )}
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => setShowMoods(false)}>
+            <IonIcon name="close" size={24} color="#f00" />
+          </TouchableOpacity>
+          <View style={styles.moods}>
+            <View style={styles.mood}>
+              <TouchableOpacity
+                onPress={() => selectMood(defaultMood)}
+                style={styles.setMoodBtn}>
+                <Text style={{...styles.text}}>All</Text>
+              </TouchableOpacity>
+            </View>
+            {moods?.map((m: Mood) => (
+              <View style={styles.mood} key={m.name}>
+                <TouchableOpacity
+                  onPress={() => selectMood(m)}
+                  style={styles.setMoodBtn}>
+                  <Text style={{...styles.text}}>{m.name}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.deleteMoodBtn}
+                  onPress={() => handleDeleteMood(m.name)}>
+                  <IonIcon name="trash-bin" size={12} color="#f00" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+
+          {(moods?.length === 0 || !moods) && (
+            <Text style={{...styles.text, textAlign: 'center'}}>
+              You haven't created a mood board yet
+            </Text>
+          )}
+          {!moods || moods?.length < 10 ? (
+            <TextInput
+              style={styles.txtInput}
+              onChangeText={onChangeMoodText}
+              value={moodText}
+              placeholder="Add Mood"
+              placeholderTextColor={theme.txtColor}
+              maxLength={20}
+              onSubmitEditing={() => handleSubmitMood()}
+            />
+          ) : (
+            <Text style={{...styles.text, textAlign: 'center'}}>
+              You have 10 boards, which is the maximum
+            </Text>
+          )}
+        </View>
+      )}
+
       <TouchableOpacity
         style={styles.menuBtn}
         onPress={() => setShowMenu(!showMenu)}>
@@ -126,7 +262,57 @@ const stylesHandler = (theme: any) =>
       fontWeight: 'bold',
       fontFamily: 'arialrmtb',
     },
+
+    moodWrapper: {
+      elevation: 3,
+      backgroundColor: theme.backgroundColor,
+      position: 'absolute',
+      zIndex: 1,
+      top: 0,
+      width: '100%',
+      padding: 5,
+      borderRadius: 5,
+    },
+    moods: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+    },
+    moodBtn: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
     menuBtn: {},
+    txtInput: {
+      borderWidth: 1,
+      borderColor: theme.txtColor,
+      color: theme.txtColor,
+      width: '50%',
+      marginVertical: 10,
+      padding: 5,
+      fontStyle: 'italic',
+      alignSelf: 'center',
+      borderRadius: 5,
+    },
+    closeBtn: {
+      alignSelf: 'flex-end',
+      margin: 3,
+    },
+    mood: {
+      flexDirection: 'row',
+      borderWidth: 1,
+      borderColor: theme.txtColor,
+      alignSelf: 'flex-start',
+      padding: 3,
+      alignItems: 'center',
+      borderRadius: 5,
+      margin: 5,
+    },
+    setMoodBtn: {
+      marginHorizontal: 3,
+    },
+    deleteMoodBtn: {marginLeft: 10},
     settingsWrapper: {
       position: 'absolute',
       elevation: 3,

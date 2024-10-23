@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import {View, TouchableOpacity, Text, StyleSheet} from 'react-native';
-import React, {ReactElement, useEffect, useContext, useState} from 'react';
+import React, {ReactElement, useEffect, useContext} from 'react';
 
 import {ImageLibraryOptions} from 'react-native-image-picker';
 import ImageCard from './ImageCard';
@@ -19,7 +19,7 @@ import uuid from 'react-native-uuid';
 var RNFS = require('react-native-fs');
 
 const MainComp = (): React.JSX.Element => {
-  const {
+  var {
     theme,
     handleThemeChange,
     images,
@@ -30,6 +30,11 @@ const MainComp = (): React.JSX.Element => {
     storeData,
     setHomeWallpaper,
     setLockWallpaper,
+    moods,
+    defaultMood,
+    setMoods,
+    currMood,
+    setCurrMood,
   } = useContext(AppContext);
 
   // async storage values
@@ -43,7 +48,7 @@ const MainComp = (): React.JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // retrieve saves wallpapers
+  // retrieve saved wallpapers
   useEffect(() => {
     AsyncStorage.multiGet(['home_wallpaper', 'lock_wallpaper']).then(value => {
       if (value === null) {
@@ -52,6 +57,36 @@ const MainComp = (): React.JSX.Element => {
         setLockWallpaper(value[1][1]);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // get saved moods
+  useEffect(() => {
+    try {
+      AsyncStorage.getItem('moods').then(value => {
+        setMoods(value != null ? JSON.parse(value) : []);
+      });
+    } catch (error) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  interface Mood {
+    name: string;
+    images: string[];
+  }
+  // get saved current mood, display images from said mood
+  useEffect(() => {
+    try {
+      AsyncStorage.getItem('setMood').then(value => {
+        if (value === null) {
+        } else {
+          const moodObj = moods?.find((m: Mood) => m.name === value);
+          setImages((l: string[]) =>
+            l.filter((item: string) => moodObj?.images?.includes(item)),
+          );
+        }
+      });
+    } catch (error) {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -81,6 +116,8 @@ const MainComp = (): React.JSX.Element => {
           }
         });
         setImages(imgs);
+        defaultMood = {name: 'All', images: imgs};
+        setCurrMood(defaultMood);
       })
       .catch(() => {
         // arg- err: {message: any; code: any}
@@ -205,7 +242,7 @@ const MainComp = (): React.JSX.Element => {
       {showFullscreenImg && <FullScreen />}
       {images && (
         <MasonryList
-          keyExtractor={item => item.id}
+          // keyExtractor={item => item.id}
           ListHeaderComponent={<View />}
           contentContainerStyle={{
             paddingHorizontal: 0,
@@ -213,7 +250,7 @@ const MainComp = (): React.JSX.Element => {
           }}
           // onEndReached={() => console.log('onEndReached')}
           numColumns={2}
-          data={images}
+          data={currMood?.images}
           renderItem={renderItem}
           // images={images}
         />
