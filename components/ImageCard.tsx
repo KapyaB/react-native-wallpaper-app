@@ -6,6 +6,7 @@ import {TYPE} from 'react-native-manage-wallpaper';
 import {AppContext} from '../globalState/AppContext';
 
 import EntypoIcon from '@react-native-vector-icons/entypo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ImageCard = ({
   item,
@@ -24,11 +25,41 @@ const ImageCard = ({
     setShowFullscreenImg,
     homeWallpaper,
     lockWallpaper,
+    moods,
+    setMoods,
+    displayStatusMsg,
   } = useContext(AppContext);
 
   // console.log(homeWallpaper, lockWallpaper);
 
   const styles = stylesHandler(theme);
+
+  const [showMoodList, setShowMoodList] = useState(false);
+
+  interface Mood {
+    name: string;
+    images: string[];
+  }
+  const addImageToBoard = (selMood: Mood) => {
+    // find mood in moods
+    const moodInd = moods.indexOf(selMood);
+    if (moods[moodInd].images.includes(item.source)) {
+      displayStatusMsg('Image Already Added');
+    } else {
+      let updatedMoods = moods;
+      updatedMoods[moodInd].images.push({source: item.source});
+      console.log(updatedMoods);
+
+      setMoods(updatedMoods);
+      // save
+      try {
+        const jsonObj = JSON.stringify(updatedMoods);
+        AsyncStorage.setItem('moods', jsonObj);
+        displayStatusMsg(`Image Added to ${selMood.name}`);
+      } catch (error) {}
+    }
+    setShowMoodList(false);
+  };
 
   return (
     <TouchableOpacity
@@ -97,11 +128,35 @@ const ImageCard = ({
           <TouchableOpacity
             style={styles.btn}
             onPress={() => {
+              setShowMoodList(true);
+              setShowMenu(false);
+            }}>
+            <Text style={{...styles.text}}>Add To Board</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.btn}
+            onPress={() => {
               deleteFile(item.source);
               setShowMenu(!showMenu);
             }}>
             <Text style={{...styles.text}}>Delete</Text>
           </TouchableOpacity>
+        </View>
+      )}
+
+      {showMoodList && (
+        <View style={styles.moodWrapper}>
+          <Text style={{...styles.text}}>Select Mood</Text>
+          <View style={styles.moodList}>
+            {moods.map((m: Mood) => (
+              <TouchableOpacity
+                style={styles.moodBtn}
+                key={m.name}
+                onPress={() => addImageToBoard(m)}>
+                <Text style={{...styles.text}}>{m.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       )}
       <Image
@@ -163,6 +218,7 @@ const stylesHandler = (theme: any) =>
       backgroundColor: theme.backgroundColor,
       alignSelf: 'center',
       borderRadius: 6,
+      opacity: 0.9,
     },
 
     wallpaperTypeWrapper: {
@@ -176,4 +232,8 @@ const stylesHandler = (theme: any) =>
       alignItems: 'center',
       borderRadius: 5,
     },
+
+    moodWrapper: {},
+    moodList: {},
+    moodBtn: {},
   });

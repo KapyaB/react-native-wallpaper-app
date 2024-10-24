@@ -1,6 +1,7 @@
 import {StyleSheet, Switch, Text, TouchableOpacity, View} from 'react-native';
 import React, {useContext, useState} from 'react';
 import {AppContext} from '../../globalState/AppContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // file system
 var RNFS = require('react-native-fs');
@@ -27,6 +28,10 @@ const MoodDeletePrompt = ({
     // delete mood from list
 
     setMoods(moods.filter((item: Mood) => item.name !== mood));
+    try {
+      const jsonObj = JSON.stringify(moods);
+      AsyncStorage.setItem('moods', jsonObj);
+    } catch (error) {}
 
     // delete photos if set to true
     if (deletePhotos) {

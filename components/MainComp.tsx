@@ -32,6 +32,7 @@ const MainComp = (): React.JSX.Element => {
     setLockWallpaper,
     moods,
     defaultMood,
+    setDefaultMood,
     setMoods,
     currMood,
     setCurrMood,
@@ -116,8 +117,8 @@ const MainComp = (): React.JSX.Element => {
           }
         });
         setImages(imgs);
-        defaultMood = {name: 'All', images: imgs};
-        setCurrMood(defaultMood);
+        setDefaultMood({name: 'All', images: imgs});
+        setCurrMood({name: 'All', images: imgs});
       })
       .catch(() => {
         // arg- err: {message: any; code: any}

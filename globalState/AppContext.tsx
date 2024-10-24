@@ -75,7 +75,10 @@ const AppProvider = ({children}: {children: any}) => {
     name: string;
     images: imgInterface[] | undefined;
   }
-  let defaultMood = {name: 'All', images: images};
+  const [defaultMood, setDefaultMood] = useState<Mood>({
+    name: 'All',
+    images: images,
+  });
 
   const [moods, setMoods] = useState<Mood[]>([]);
   const [currMood, setCurrMood] = useState<Mood>(defaultMood);
@@ -129,6 +132,7 @@ const AppProvider = ({children}: {children: any}) => {
 
         moods,
         defaultMood,
+        setDefaultMood,
         setMoods,
         currMood,
         setCurrMood,

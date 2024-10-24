@@ -18,7 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import MoodDeletePrompt from './reusable/MoodDeletePrompt';
 
 const Header = () => {
-  const {
+  var {
     defaultMood,
     currMood,
     setCurrMood,
